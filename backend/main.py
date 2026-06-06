@@ -3,22 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 
 from database import engine, Base
-from routers import auth, prompts, coaching
+from routers import auth, prompts, coaching, profile
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="PromptDNA API",
     description="Personalized AI Prompt Intelligence Coach",
-    version="1.0.0"
+    version="2.0.0"
 )
 
-# Read allowed origins from environment — comma separated
-# e.g. "http://localhost:3000,https://promptdna.vercel.app"
-raw_origins = os.getenv(
-    "ALLOWED_ORIGINS",
-    "http://localhost:3000"
-)
+raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
 allowed_origins = [o.strip() for o in raw_origins.split(",")]
 
 app.add_middleware(
@@ -32,8 +27,9 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(prompts.router)
 app.include_router(coaching.router)
+app.include_router(profile.router)
 
 
 @app.get("/")
 def root():
-    return {"status": "PromptDNA API is running"}
+    return {"status": "PromptDNA API v2.0 running"}

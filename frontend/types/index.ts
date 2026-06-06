@@ -78,3 +78,56 @@ export interface AnalyticsData {
   dimension_averages: Record<string, number>
   streak: number
 }
+
+export interface Personality {
+  type: string
+  description: string
+  icon: string
+  traits: string[]
+}
+
+export interface WeeklyTrendPoint {
+  week: string
+  avg_score: number
+  count: number
+}
+
+export interface DNAProfile {
+  total_prompts: number
+  avg_score: number
+  dimension_avgs: Record<string, number>
+  strengths: string[]
+  weaknesses: string[]
+  trend_pct: number
+  top_categories: string[]
+  personality: Personality
+  heatmap: Record<string, number>
+  weekly_trend: WeeklyTrendPoint[]
+}
+
+export interface ComparisonResult {
+  id: string
+  prompt_a: string
+  prompt_b: string
+  score_a: number
+  score_b: number
+  scores_a: Record<string, number>
+  scores_b: Record<string, number>
+  winner: string
+  recommendation: string
+  category_a: string
+  category_b: string
+}
+
+export interface WeeklyReport {
+  total_prompts: number
+  avg_score: number
+  best_category: string | null
+  worst_category: string | null
+  improvement_pct: number
+  top_mistakes: string[]
+  coaching_suggestions: string[]
+  dimension_avgs: Record<string, number>
+  week_start: string
+  week_end: string
+}
