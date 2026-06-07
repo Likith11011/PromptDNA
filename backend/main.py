@@ -11,29 +11,30 @@ from routers import auth, prompts, coaching, profile
 
 try:
     Base.metadata.create_all(bind=engine)
-    logger.info("Database tables verified successfully")
+    logger.info("Database tables verified")
 except Exception as e:
-    logger.error(f"Database connection error: {e}")
+    logger.error(f"DB error: {e}")
     raise
 
 app = FastAPI(
     title="PromptDNA API",
-    description="Personalized AI Prompt Intelligence Coach",
     version="2.0.0"
 )
 
-raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-allowed_origins = [o.strip() for o in raw_origins.split(",")]
+raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+if raw_origins == "*":
+    allowed_origins = ["*"]
+else:
+    allowed_origins = [o.strip() for o in raw_origins.split(",")]
 
-logger.info(f"CORS allowed origins: {allowed_origins}")
+logger.info(f"CORS origins: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=False if "*" in allowed_origins else True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 
 app.include_router(auth.router)
@@ -49,4 +50,4 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "version": "2.0.0"}
+    return {"status": "ok"}
