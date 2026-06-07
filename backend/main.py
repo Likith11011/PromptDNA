@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 from database import engine, Base
 from routers import auth, prompts, coaching, profile
 
-# Safe table creation — idempotent, won't drop existing data
 try:
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables verified successfully")
@@ -34,6 +33,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 app.include_router(auth.router)
@@ -49,5 +49,4 @@ def root():
 
 @app.get("/health")
 def health():
-    """Render uses this to check if the service is alive"""
     return {"status": "ok", "version": "2.0.0"}

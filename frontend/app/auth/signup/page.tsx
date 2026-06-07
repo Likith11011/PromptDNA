@@ -18,19 +18,59 @@ export default function SignupPage() {
   }
 
   async function handleSubmit() {
+    if (!form.email || !form.password) {
+      setError("Email and password are required.")
+      return
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.")
+      return
+    }
+
     setError("")
     setLoading(true)
+
     try {
-      await api.post("/auth/signup", form)
+      // Step 1 — signup
+      await api.post("/auth/signup", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      })
+
+      // Step 2 — auto login
       const loginRes = await api.post<TokenResponse>("/auth/login", {
         email: form.email,
         password: form.password,
       })
+
       saveToken(loginRes.data.access_token)
       router.push("/analyze")
+
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail
-      setError(msg || "Signup failed. Try again.")
+      console.error("Signup error:", err)
+
+      const axiosErr = err as {
+        response?: { data?: { detail?: string }; status?: number }
+        code?: string
+        message?: string
+      }
+
+      if (axiosErr.code === "ERR_NETWORK" || axiosErr.code === "ECONNABORTED") {
+        setError(
+          "Cannot reach the server. The backend may be starting up — wait 30 seconds and try again."
+        )
+      } else if (axiosErr.response?.status === 409) {
+        setError("An account with this email already exists. Try logging in instead.")
+      } else if (axiosErr.response?.status === 422) {
+        setError("Invalid email format. Please check your email address.")
+      } else if (axiosErr.response?.data?.detail) {
+        setError(axiosErr.response.data.detail)
+      } else {
+        setError(
+          `Signup failed (${axiosErr.response?.status || "network error"}). Check your connection and try again.`
+        )
+      }
     } finally {
       setLoading(false)
     }
@@ -46,29 +86,35 @@ export default function SignupPage() {
           <h1 className="text-2xl font-bold text-slate-900">
             Join <span className="text-indigo-600">PromptDNA</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-2">Start writing better AI prompts today</p>
+          <p className="text-slate-400 text-sm mt-2">
+            Start writing better AI prompts today
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
           {error && (
-            <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm flex items-center gap-2">
-              <span>⚠</span> {error}
+            <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm flex items-start gap-2">
+              <span className="flex-shrink-0 mt-0.5">⚠</span>
+              <span>{error}</span>
             </div>
           )}
 
           {[
-            { label: "Full name", name: "name", type: "text", placeholder: "Your Name" },
+            { label: "Full name", name: "name", type: "text", placeholder: "Your name" },
             { label: "Email address", name: "email", type: "email", placeholder: "you@example.com" },
-            { label: "Password", name: "password", type: "password", placeholder: "Min 8 characters" },
+            { label: "Password", name: "password", type: "password", placeholder: "Min 6 characters" },
           ].map(({ label, name, type, placeholder }) => (
             <div key={name}>
-              <label className="block text-slate-700 text-sm font-medium mb-1.5">{label}</label>
+              <label className="block text-slate-700 text-sm font-medium mb-1.5">
+                {label}
+              </label>
               <input
                 name={name}
                 type={type}
                 placeholder={placeholder}
                 value={form[name as keyof typeof form]}
                 onChange={handleChange}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                 className="w-full bg-slate-50 text-slate-800 placeholder-slate-400 rounded-xl px-4 py-3 text-sm border border-slate-200 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
               />
             </div>
@@ -77,9 +123,19 @@ export default function SignupPage() {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white font-semibold text-sm transition-all shadow-sm shadow-indigo-200 mt-2"
+            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all shadow-sm shadow-indigo-200 mt-2"
           >
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Creating account...
+              </span>
+            ) : (
+              "Create Account"
+            )}
           </button>
 
           <p className="text-center text-slate-400 text-sm">
