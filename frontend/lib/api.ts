@@ -6,10 +6,10 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // Timeout after 30 seconds — Render free tier can be slow on cold start
+  timeout: 30000,
 })
 
-// Request interceptor — runs before every API call
-// Reads the token from localStorage and attaches it automatically
 api.interceptors.request.use((config) => {
   const token = getToken()
   if (token) {
@@ -18,14 +18,16 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor — runs after every API response
-// If backend returns 401, clear token and redirect to login
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.code === "ECONNABORTED") {
+      console.error("Request timeout — backend may be waking up, try again")
+    }
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         localStorage.removeItem("promptdna_token")
+        document.cookie = "promptdna_token=; path=/; max-age=0"
         window.location.href = "/auth/login"
       }
     }

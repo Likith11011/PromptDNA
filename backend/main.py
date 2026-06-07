@@ -1,13 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from database import engine, Base
 from routers import auth, prompts, coaching, profile
 
-# Create all tables on startup — safe for production since
-# Alembic migrations already ran, create_all is idempotent
-Base.metadata.create_all(bind=engine)
+# Safe table creation — idempotent, won't drop existing data
+try:
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables verified successfully")
+except Exception as e:
+    logger.error(f"Database connection error: {e}")
+    raise
 
 app = FastAPI(
     title="PromptDNA API",
@@ -17,6 +25,8 @@ app = FastAPI(
 
 raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
 allowed_origins = [o.strip() for o in raw_origins.split(",")]
+
+logger.info(f"CORS allowed origins: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,4 +49,5 @@ def root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    """Render uses this to check if the service is alive"""
+    return {"status": "ok", "version": "2.0.0"}
