@@ -5,6 +5,8 @@ import os
 from database import engine, Base
 from routers import auth, prompts, coaching, profile
 
+# Create all tables on startup — safe for production since
+# Alembic migrations already ran, create_all is idempotent
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -33,3 +35,8 @@ app.include_router(profile.router)
 @app.get("/")
 def root():
     return {"status": "PromptDNA API v2.0 running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

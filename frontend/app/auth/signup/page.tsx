@@ -57,7 +57,7 @@ export default function SignupPage() {
           )}
 
           {[
-            { label: "Full name", name: "name", type: "text", placeholder: "Likith" },
+            { label: "Full name", name: "name", type: "text", placeholder: "Your Name" },
             { label: "Email address", name: "email", type: "email", placeholder: "you@example.com" },
             { label: "Password", name: "password", type: "password", placeholder: "Min 8 characters" },
           ].map(({ label, name, type, placeholder }) => (

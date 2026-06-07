@@ -88,8 +88,10 @@ export interface Personality {
 
 export interface WeeklyTrendPoint {
   week: string
+  date_range: string
   avg_score: number
   count: number
+  has_data: boolean
 }
 
 export interface DNAProfile {
