@@ -18,8 +18,14 @@ export default function LoginPage() {
   }
 
   async function handleSubmit() {
+    if (!form.email || !form.password) {
+      setError("Email and password are required.")
+      return
+    }
+
     setError("")
     setLoading(true)
+
     try {
       const res = await api.post<TokenResponse>("/auth/login", form)
       saveToken(res.data.access_token)
@@ -33,6 +39,8 @@ export default function LoginPage() {
         setError("Invalid email or password.")
       } else if (axiosErr.response?.data?.detail) {
         setError(axiosErr.response.data.detail)
+      } else if (axiosErr.code === "ECONNABORTED") {
+        setError("Request timed out. Please try again.")
       } else {
         setError("Login failed. Please try again.")
       }

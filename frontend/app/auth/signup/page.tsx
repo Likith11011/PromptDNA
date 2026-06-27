@@ -49,6 +49,7 @@ export default function SignupPage() {
       const axiosErr = err as {
         response?: { data?: { detail?: string }; status?: number }
         code?: string
+        message?: string
       }
 
       if (axiosErr.response?.status === 409) {
@@ -57,6 +58,8 @@ export default function SignupPage() {
         setError("Invalid email format.")
       } else if (axiosErr.response?.data?.detail) {
         setError(axiosErr.response.data.detail)
+      } else if (axiosErr.code === "ECONNABORTED") {
+        setError("Request timed out. Please try again.")
       } else {
         setError("Signup failed. Please try again.")
       }

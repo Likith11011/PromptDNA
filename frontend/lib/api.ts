@@ -6,7 +6,6 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  // Timeout after 30 seconds — Render free tier can be slow on cold start
   timeout: 30000,
 })
 
@@ -21,9 +20,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.code === "ECONNABORTED") {
-      console.error("Request timeout — backend may be waking up, try again")
-    }
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         localStorage.removeItem("promptdna_token")
