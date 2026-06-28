@@ -1,10 +1,13 @@
 import axios from "axios"
 import { getToken } from "./auth"
 
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000",
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
+    "Accept": "application/json",
   },
   timeout: 30000,
 })
@@ -13,6 +16,10 @@ api.interceptors.request.use((config) => {
   const token = getToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
+  }
+  // Always ensure Content-Type is set for POST requests
+  if (config.method === "post" || config.method === "put" || config.method === "patch") {
+    config.headers["Content-Type"] = "application/json"
   }
   return config
 })

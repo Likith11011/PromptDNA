@@ -3,9 +3,11 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import api from "@/lib/api"
+import axios from "axios"
 import { saveToken } from "@/lib/auth"
 import { TokenResponse } from "@/types"
+
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
 
 export default function SignupPage() {
   const router = useRouter()
@@ -30,39 +32,49 @@ export default function SignupPage() {
     setError("")
     setLoading(true)
 
-    try {
-      await api.post("/auth/signup", {
-        name: form.name,
-        email: form.email,
-        password: form.password,
-      })
+    const headers = {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    }
 
-      const loginRes = await api.post<TokenResponse>("/auth/login", {
-        email: form.email,
-        password: form.password,
-      })
+    try {
+      await axios.post(
+        `${BASE_URL}/auth/signup`,
+        { name: form.name.trim(), email: form.email.trim(), password: form.password },
+        { headers, timeout: 30000 }
+      )
+
+      const loginRes = await axios.post<TokenResponse>(
+        `${BASE_URL}/auth/login`,
+        { email: form.email.trim(), password: form.password },
+        { headers, timeout: 30000 }
+      )
 
       saveToken(loginRes.data.access_token)
       router.push("/analyze")
 
     } catch (err: unknown) {
-      const axiosErr = err as {
-        response?: { data?: { detail?: string }; status?: number }
+      let message = "Signup failed. Please try again."
+
+      const e = err as {
+        response?: {
+          status?: number
+          data?: { detail?: unknown }
+        }
         code?: string
-        message?: string
       }
 
-      if (axiosErr.response?.status === 409) {
-        setError("An account with this email already exists. Try logging in.")
-      } else if (axiosErr.response?.status === 422) {
-        setError("Invalid email format.")
-      } else if (axiosErr.response?.data?.detail) {
-        setError(axiosErr.response.data.detail)
-      } else if (axiosErr.code === "ECONNABORTED") {
-        setError("Request timed out. Please try again.")
-      } else {
-        setError("Signup failed. Please try again.")
+      if (e?.response?.status === 409) {
+        message = "An account with this email already exists. Try logging in."
+      } else if (e?.response?.status === 422) {
+        message = "Invalid email format. Please check your email address."
+      } else if (typeof e?.response?.data?.detail === "string") {
+        message = e.response.data.detail
+      } else if (e?.code === "ECONNABORTED") {
+        message = "Request timed out. Please try again."
       }
+
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -84,7 +96,7 @@ export default function SignupPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
-          {error && (
+          {error !== "" && (
             <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm flex items-start gap-2">
               <span className="flex-shrink-0 mt-0.5">⚠</span>
               <span>{error}</span>

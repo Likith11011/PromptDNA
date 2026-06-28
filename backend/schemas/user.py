@@ -1,28 +1,32 @@
-# schemas/user.py
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+
 
 class SignupRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., max_length=72)  # Enforce max length
-    name: str | None = None
+    password: str
+    name: Optional[str] = None
 
-# What the client sends when logging in
+    model_config = {"str_strip_whitespace": True}
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
-# What we send back after successful login
+    model_config = {"str_strip_whitespace": True}
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-# Safe user info we can send to the frontend (no hashed_password!)
+
 class UserResponse(BaseModel):
     id: str
     email: str
-    name: str | None
+    name: Optional[str] = None
     total_prompts: int
     avg_score: float
 
-    class Config:
-        from_attributes = True  # Allows converting SQLAlchemy models to this schema
+    model_config = {"from_attributes": True}

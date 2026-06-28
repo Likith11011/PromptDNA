@@ -3,9 +3,11 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import api from "@/lib/api"
+import axios from "axios"
 import { saveToken } from "@/lib/auth"
 import { TokenResponse } from "@/types"
+
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "")
 
 export default function LoginPage() {
   const router = useRouter()
@@ -27,23 +29,41 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const res = await api.post<TokenResponse>("/auth/login", form)
+      const res = await axios.post<TokenResponse>(
+        `${BASE_URL}/auth/login`,
+        { email: form.email.trim(), password: form.password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          timeout: 30000,
+        }
+      )
       saveToken(res.data.access_token)
       router.push("/analyze")
     } catch (err: unknown) {
-      const axiosErr = err as {
-        response?: { data?: { detail?: string }; status?: number }
+      let message = "Login failed. Please try again."
+
+      const e = err as {
+        response?: {
+          status?: number
+          data?: { detail?: unknown }
+        }
         code?: string
       }
-      if (axiosErr.response?.status === 401) {
-        setError("Invalid email or password.")
-      } else if (axiosErr.response?.data?.detail) {
-        setError(axiosErr.response.data.detail)
-      } else if (axiosErr.code === "ECONNABORTED") {
-        setError("Request timed out. Please try again.")
-      } else {
-        setError("Login failed. Please try again.")
+
+      if (e?.response?.status === 401) {
+        message = "Invalid email or password."
+      } else if (e?.response?.status === 422) {
+        message = "Invalid request. Please check your email and password format."
+      } else if (typeof e?.response?.data?.detail === "string") {
+        message = e.response.data.detail
+      } else if (e?.code === "ECONNABORTED") {
+        message = "Request timed out. Please try again."
       }
+
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -63,7 +83,7 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-5">
-          {error && (
+          {error !== "" && (
             <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-red-600 text-sm flex items-start gap-2">
               <span className="flex-shrink-0">⚠</span>
               <span>{error}</span>
