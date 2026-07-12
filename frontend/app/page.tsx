@@ -20,26 +20,22 @@ const howItWorks = [
   {
     step: "01",
     title: "Paste Your Prompt",
-    description:
-      "Enter any prompt you would send to ChatGPT, Claude, or Gemini.",
+    description: "Enter any prompt you would send to ChatGPT, Claude, or Gemini.",
   },
   {
     step: "02",
     title: "Get Instant Analysis",
-    description:
-      "PromptDNA scores your prompt across 5 dimensions and predicts success probability.",
+    description: "PromptDNA scores your prompt across 5 dimensions and predicts success probability.",
   },
   {
     step: "03",
     title: "Receive Improvements",
-    description:
-      "LLaMA 3.3 70B rewrites your prompt to be significantly more effective.",
+    description: "LLaMA 3.3 70B rewrites your prompt to be significantly more effective.",
   },
   {
     step: "04",
     title: "Track Your Growth",
-    description:
-      "Your DNA profile updates with every prompt — see your habits and improve over time.",
+    description: "Your DNA profile updates with every prompt — see your habits and improve over time.",
   },
 ]
 
@@ -49,6 +45,54 @@ const dimensions = [
   { label: "Context", color: "bg-amber-500", score: 45 },
   { label: "Constraints", color: "bg-emerald-500", score: 30 },
   { label: "Examples", color: "bg-pink-500", score: 20 },
+]
+
+const featureCards = [
+  {
+    icon: "📊",
+    title: "5-Dimension Scoring",
+    desc: "Clarity, Specificity, Context, Constraints, and Examples — scored independently out of 20.",
+  },
+  {
+    icon: "✍️",
+    title: "AI Prompt Rewriter",
+    desc: "LLaMA 3.3 70B rewrites your weak prompt to be 3x more effective automatically.",
+  },
+  {
+    icon: "🧬",
+    title: "PromptDNA Profile",
+    desc: "Your personalized AI communication fingerprint — strengths, weaknesses, and personality type.",
+  },
+  {
+    icon: "🎯",
+    title: "Success Predictor",
+    desc: "Know before you send — predicts how likely your prompt is to get a great AI response.",
+  },
+  {
+    icon: "🔥",
+    title: "Weakness Heatmap",
+    desc: "Visual breakdown of your recurring prompt mistakes so you know exactly what to fix.",
+  },
+  {
+    icon: "⇄",
+    title: "Comparison Mode",
+    desc: "Paste two prompts and see which one wins — with a detailed explanation of why.",
+  },
+  {
+    icon: "◎",
+    title: "Coaching Engine",
+    desc: "Personalized tips based on your actual prompting patterns — not generic advice.",
+  },
+  {
+    icon: "📈",
+    title: "Progress Analytics",
+    desc: "Score trends, category breakdown, and 4-week improvement tracking in one dashboard.",
+  },
+  {
+    icon: "📋",
+    title: "Weekly Reports",
+    desc: "Your prompting performance this week vs last week with actionable suggestions.",
+  },
 ]
 
 export default function LandingPage() {
@@ -85,38 +129,31 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        {/* Background glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl" />
           <div className="absolute top-1/3 left-1/3 w-[300px] h-[300px] bg-violet-600/10 rounded-full blur-3xl" />
         </div>
 
         <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20 text-center">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300 mb-8">
             <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
             AI-Powered Prompt Intelligence
           </div>
 
-          {/* Headline */}
           <h1 className="text-6xl sm:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
             Your Prompts,{" "}
-            <span className="text-blue-400">
-              Supercharged
-            </span>
+            <span className="text-blue-400">Supercharged</span>
           </h1>
 
-          {/* Subheading */}
           <p className="text-gray-400 text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
             Analyze, score, and improve your AI prompts with personalized
             coaching — your intelligent second brain for better AI communication.
           </p>
 
-          {/* CTA buttons */}
           <div className="flex items-center justify-center gap-4 mb-16">
             <Link
               href="/auth/signup"
-              className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
+              className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-lg shadow-blue-500/30"
             >
               Start for free →
             </Link>
@@ -128,7 +165,6 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Feature pills */}
           <div className="flex flex-wrap justify-center gap-3">
             {features.map(({ icon, label }) => (
               <div
@@ -153,7 +189,6 @@ export default function LandingPage() {
             <span className="ml-3 text-gray-500 text-xs">promptdna — analyze</span>
           </div>
 
-          {/* Fake prompt input */}
           <div className="bg-[#0a0f1e] rounded-xl p-4 mb-4 border border-white/5">
             <p className="text-gray-500 text-xs mb-2 font-medium uppercase tracking-wide">Your prompt</p>
             <p className="text-gray-300 text-sm">
@@ -161,7 +196,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Score display */}
           <div className="flex items-center gap-4 mb-4">
             <div className="relative w-16 h-16 flex-shrink-0 flex items-center justify-center">
               <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
@@ -172,7 +206,7 @@ export default function LandingPage() {
                   stroke="#3b82f6"
                   strokeWidth="6"
                   strokeLinecap="round"
-                  strokeDasharray={`${(42 / 100) * 169.6} 169.6`}
+                  strokeDasharray="71.2 169.6"
                 />
               </svg>
               <span className="absolute text-sm font-bold text-red-400">42</span>
@@ -189,7 +223,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Dimension bars */}
           <div className="space-y-2">
             {dimensions.map(({ label, color, score }) => (
               <div key={label}>
@@ -252,55 +285,8 @@ export default function LandingPage() {
               Built for students, developers, researchers, and anyone who uses AI daily
             </p>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                icon: "📊",
-                title: "5-Dimension Scoring",
-                desc: "Clarity, Specificity, Context, Constraints, and Examples — scored independently out of 20.",
-              },
-              {
-                icon: "✍️",
-                title: "AI Prompt Rewriter",
-                desc: "LLaMA 3.3 70B rewrites your weak prompt to be 3x more effective automatically.",
-              },
-              {
-                icon: "🧬",
-                title: "PromptDNA Profile",
-                desc: "Your personalized AI communication fingerprint — strengths, weaknesses, and personality type.",
-              },
-              {
-                icon: "🎯",
-                title: "Success Predictor",
-                desc: "Know before you send — predicts how likely your prompt is to get a great AI response.",
-              },
-              {
-                icon: "🔥",
-                title: "Weakness Heatmap",
-                desc: "Visual breakdown of your recurring prompt mistakes so you know exactly what to fix.",
-              },
-              {
-                icon: "⇄",
-                title: "Comparison Mode",
-                desc: "Paste two prompts and see which one wins — with a detailed explanation of why.",
-              },
-              {
-                icon: "◎",
-                title: "Coaching Engine",
-                desc: "Personalized tips based on your actual prompting patterns — not generic advice.",
-              },
-              {
-                icon: "📈",
-                title: "Progress Analytics",
-                desc: "Score trends, category breakdown, and 4-week improvement tracking in one dashboard.",
-              },
-              {
-                icon: "📋",
-                title: "Weekly Reports",
-                desc: "Your prompting performance this week vs last week with actionable suggestions.",
-              },
-            ].map(({ icon, title, desc }) => (
+            {featureCards.map(({ icon, title, desc }) => (
               <div
                 key={title}
                 className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 hover:border-blue-500/20 transition-all group"
@@ -316,7 +302,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA section */}
+      {/* CTA */}
       <section className="max-w-3xl mx-auto px-6 py-24 text-center">
         <div className="bg-gradient-to-br from-blue-600/20 to-violet-600/20 border border-blue-500/20 rounded-3xl p-12">
           <h2 className="text-4xl font-bold text-white mb-4">
@@ -351,17 +337,17 @@ export default function LandingPage() {
           </p>
           <div className="flex items-center gap-4">
             
-              href="https://github.com/Likith11011/PromptDNA"
-              target="_blank"
-              rel="noopener noreferrer"
+              <a href="https://github.com/Likith11011/PromptDNA" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-white text-sm transition-colors">GitHub</a>
+            <Link
+              href="/auth/login"
               className="text-gray-500 hover:text-white text-sm transition-colors"
             >
-              GitHub
-            </a>
-            <Link href="/auth/login" className="text-gray-500 hover:text-white text-sm transition-colors">
               Login
             </Link>
-            <Link href="/auth/signup" className="text-gray-500 hover:text-white text-sm transition-colors">
+            <Link
+              href="/auth/signup"
+              className="text-gray-500 hover:text-white text-sm transition-colors"
+            >
               Sign up
             </Link>
           </div>
