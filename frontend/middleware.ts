@@ -2,14 +2,14 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
 const protectedRoutes = ["/analyze", "/history", "/coaching", "/profile", "/compare"]
-const authRoutes = ["/auth/login", "/auth/signup"]
+const authRoutes = ["/auth/login", "/auth/signup", "/login", "/signup"]
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get("promptdna_token")?.value
   const { pathname } = request.nextUrl
 
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r))
-  const isAuth = authRoutes.some((r) => pathname.startsWith(r))
+  const isAuth = authRoutes.some((r) => pathname === r || pathname.startsWith(r))
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/auth/login", request.url))
@@ -30,5 +30,7 @@ export const config = {
     "/profile/:path*",
     "/compare/:path*",
     "/auth/:path*",
+    "/login",
+    "/signup",
   ],
 }

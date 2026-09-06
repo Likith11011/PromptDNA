@@ -6,9 +6,9 @@ from core.config import settings
 from models.prompt import PromptLog
 from models.coaching import CoachingInsight
 from models.feedback import Feedback
+from services.ai_service import _call_groq_chat
 
 client = Groq(api_key=settings.GROQ_API_KEY)
-MODEL = "llama-3.3-70b-versatile"
 
 
 def get_user_stats(db: Session, user_id: str) -> dict | None:
@@ -115,8 +115,7 @@ Return ONLY this JSON array with exactly 3 items:
 ]"""
 
     try:
-        response = client.chat.completions.create(
-            model=MODEL,
+        raw_text = _call_groq_chat(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
@@ -125,16 +124,15 @@ Return ONLY this JSON array with exactly 3 items:
             max_tokens=1024,
         )
 
-        raw_text = response.choices[0].message.content.strip()
-        raw_text = re.sub(r"```json\s*", "", raw_text)
-        raw_text = re.sub(r"```\s*", "", raw_text)
-        raw_text = raw_text.strip()
+        clean_text = re.sub(r"```json\s*", "", raw_text)
+        clean_text = re.sub(r"```\s*", "", clean_text)
+        clean_text = clean_text.strip()
 
-        match = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        match = re.search(r'\[.*\]', clean_text, re.DOTALL)
         if match:
-            raw_text = match.group(0)
+            clean_text = match.group(0)
 
-        insights_data = json.loads(raw_text)
+        insights_data = json.loads(clean_text)
         print(f"Coaching: Groq returned {len(insights_data)} insights")
 
         db.query(CoachingInsight).filter(CoachingInsight.user_id == user_id).delete()

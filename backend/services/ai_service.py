@@ -4,7 +4,27 @@ from groq import Groq
 from core.config import settings
 
 client = Groq(api_key=settings.GROQ_API_KEY)
-MODEL = "llama-3.3-70b-versatile"
+PRIMARY_MODELS = [
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "qwen/qwen3.8-27b",
+]
+
+
+def _call_groq_chat(messages: list, temperature: float = 0.3, max_tokens: int = 2048):
+    for model in PRIMARY_MODELS:
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"Groq model {model} failed: {e}")
+            continue
+    raise RuntimeError("All Groq model candidates failed.")
 
 
 def analyze_prompt_with_ai(prompt_text: str) -> dict:
@@ -51,9 +71,9 @@ Return ONLY this JSON object, nothing else:
   "success_reason": ""
 }}"""
 
+    raw_text = ""
     try:
-        response = client.chat.completions.create(
-            model=MODEL,
+        raw_text = _call_groq_chat(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
@@ -62,30 +82,28 @@ Return ONLY this JSON object, nothing else:
             max_tokens=2048,
         )
 
-        raw_text = response.choices[0].message.content.strip()
-
         # Strip any markdown fences
-        raw_text = re.sub(r"```json\s*", "", raw_text)
-        raw_text = re.sub(r"```\s*", "", raw_text)
-        raw_text = raw_text.strip()
+        clean_text = re.sub(r"```json\s*", "", raw_text)
+        clean_text = re.sub(r"```\s*", "", clean_text)
+        clean_text = clean_text.strip()
 
         # Extract the JSON object
-        match = re.search(r'\{.*\}', raw_text, re.DOTALL)
+        match = re.search(r'\{.*\}', clean_text, re.DOTALL)
         if match:
-            raw_text = match.group(0)
+            clean_text = match.group(0)
 
-        result = json.loads(raw_text)
+        result = json.loads(clean_text)
 
         # Clamp scores to valid range
         for key in ["clarity", "specificity", "context", "constraints", "examples"]:
-            result[key] = max(0.0, min(20.0, float(result.get(key, 5.0))))
+            result[key] = max(0.0, min(20.0, round(float(result.get(key, 5.0)), 1)))
 
         valid_categories = [
             "coding", "writing", "research", "business",
             "study", "creative", "general"
         ]
         if result.get("category") not in valid_categories:
-            result["category"] = "general"
+            result["category"] = _detect_category(prompt_text)
 
         result["success_probability"] = max(0, min(100, int(result.get("success_probability", 30))))
         result["success_reason"] = result.get("success_reason", "")
@@ -105,7 +123,7 @@ Return ONLY this JSON object, nothing else:
             result["constraints"], result["examples"]
         ])
         print(
-            f"Groq OK — total={total:.1f}, category={result['category']}, "
+            f"Groq OK - total={total:.1f}, category={result['category']}, "
             f"success={result['success_probability']}%"
         )
         return result
@@ -118,21 +136,34 @@ Return ONLY this JSON object, nothing else:
         return _fallback(prompt_text)
 
 
+def _detect_category(text: str) -> str:
+    lower = text.lower()
+    if any(k in lower for k in ["python", "javascript", "typescript", "react", "sql", "api", "code", "function", "bug", "html", "css", "docker", "endpoint", "database"]):
+        return "coding"
+    if any(k in lower for k in ["essay", "blog", "copy", "email", "article", "draft", "story", "write", "summary", "paragraph"]):
+        return "writing"
+    if any(k in lower for k in ["research", "paper", "study", "analysis", "compare", "literature", "quantum", "theory", "mechanism"]):
+        return "research"
+    if any(k in lower for k in ["business", "marketing", "investor", "pitch", "sales", "roi", "strategy", "roadmap", "revenue", "startup"]):
+        return "business"
+    if any(k in lower for k in ["learn", "teach", "homework", "exam", "quiz", "lesson", "student"]):
+        return "study"
+    if any(k in lower for k in ["poem", "song", "lyrics", "novel", "fiction", "character", "creative"]):
+        return "creative"
+    return "general"
+
+
 def _build_improved(prompt_text: str, result: dict = None) -> str:
-    """
-    Builds a genuinely improved version of the prompt using the analysis result.
-    Used when the model's improved_prompt is missing or too similar to the original.
-    """
-    category = result.get("category", "general") if result else "general"
+    category = result.get("category", "general") if result else _detect_category(prompt_text)
 
     category_role = {
-        "coding": "You are an expert software engineer with 10+ years of experience.",
-        "writing": "You are a professional writer and editor with expertise in clear communication.",
-        "research": "You are a thorough research analyst with expertise in synthesizing information.",
-        "business": "You are a senior business consultant with expertise in strategy and operations.",
-        "study": "You are an expert tutor skilled at explaining complex concepts clearly.",
-        "creative": "You are a creative professional with a talent for original ideas.",
-        "general": "You are a highly knowledgeable expert assistant.",
+        "coding": "You are a Principal Staff Software Architect with expertise in high-throughput, clean architecture.",
+        "writing": "You are a Senior Technical Writer and Copy Editor with expertise in high-impact prose.",
+        "research": "You are a Principal Research Scientist with expertise in synthesizing complex literature.",
+        "business": "You are a Senior Strategic Management Consultant with deep experience in executive briefings.",
+        "study": "You are an expert Pedagogical Tutor skilled at Socratic explanations and first-principles breakdowns.",
+        "creative": "You are an award-winning Creative Director with a talent for vivid narrative structure.",
+        "general": "You are an expert AI advisor with deep domain knowledge.",
     }
 
     role = category_role.get(category, category_role["general"])
@@ -140,34 +171,62 @@ def _build_improved(prompt_text: str, result: dict = None) -> str:
     return (
         f"{role}\n\n"
         f"Task: {prompt_text.rstrip('.')}\n\n"
-        f"Please provide a comprehensive and well-structured response that includes:\n"
-        f"1. A clear and thorough answer to the main request\n"
-        f"2. Step-by-step breakdown where applicable\n"
-        f"3. Concrete examples or code snippets to illustrate key points\n"
-        f"4. Common pitfalls, edge cases, or mistakes to avoid\n"
-        f"5. Best practices and professional recommendations\n\n"
-        f"Format requirements:\n"
-        f"- Use clear headers for each section\n"
-        f"- Keep explanations concise but complete\n"
-        f"- Use bullet points for lists\n"
-        f"- Highlight any important warnings or notes"
+        f"Execution Requirements:\n"
+        f"1. Provide an exhaustive, step-by-step resolution addressing all edge cases\n"
+        f"2. Include concrete production-ready code or real-world practical examples\n"
+        f"3. Explicitly state assumptions, failure modes, and performance trade-offs\n"
+        f"4. Structure output with clean Markdown headings, bullet points, and concise takeaways"
     )
 
 
 def _fallback(prompt_text: str) -> dict:
-    print("Using rule-based fallback — Groq API unavailable")
+    """
+    Intelligent heuristic fallback: Evaluates prompt features dynamically
+    so different prompts receive distinct, representative scores even if offline.
+    """
+    words = prompt_text.strip().split()
+    word_count = len(words)
+    lower = prompt_text.lower()
+    category = _detect_category(prompt_text)
+
+    # Clarity evaluation (1-20)
+    has_question_or_action = any(lower.startswith(w) for w in ["write", "create", "build", "explain", "how", "what", "analyze", "design", "refactor", "generate"])
+    clarity = min(19.0, 8.0 + (3.0 if has_question_or_action else 0.0) + min(6.0, word_count * 0.3))
+
+    # Specificity evaluation (1-20)
+    tech_keywords = ["typescript", "python", "fastapi", "react", "postgresql", "docker", "jwt", "o(n)", "json", "markdown", "step-by-step", "metric", "framework", "version", "schema"]
+    spec_matches = sum(1 for kw in tech_keywords if kw in lower)
+    specificity = min(19.0, 4.0 + min(12.0, spec_matches * 3.5) + (3.0 if word_count > 25 else 1.0))
+
+    # Context evaluation (1-20)
+    context_keywords = ["act as", "you are", "role", "background", "context", "for a", "building a", "scenario", "situation", "company", "team"]
+    has_context = any(kw in lower for kw in context_keywords)
+    context = min(18.0, 3.0 + (8.0 if has_context else 0.0) + min(6.0, word_count * 0.2))
+
+    # Constraints evaluation (1-20)
+    constraint_keywords = ["must", "limit", "format", "do not", "only", "table", "schema", "in 200 words", "concise", "strict", "bullet", "headers"]
+    has_constraints = any(kw in lower for kw in constraint_keywords)
+    constraints = min(18.0, 3.0 + (8.0 if has_constraints else 0.0) + (3.0 if ":" in prompt_text or "\n" in prompt_text else 0.0))
+
+    # Examples evaluation (1-20)
+    has_examples = any(kw in lower for kw in ["example", "sample", "e.g.", "input:", "output:", "like this"])
+    examples = min(18.0, 2.0 + (10.0 if has_examples else 0.0) + (4.0 if "```" in prompt_text or "{" in prompt_text else 0.0))
+
+    total = clarity + specificity + context + constraints + examples
+    success_prob = min(98, max(20, int(total * 0.95)))
+
     return {
-        "clarity": 5.0,
-        "specificity": 4.0,
-        "context": 3.0,
-        "constraints": 3.0,
-        "examples": 2.0,
-        "category": "general",
-        "improved_prompt": _build_improved(prompt_text),
+        "clarity": round(clarity, 1),
+        "specificity": round(specificity, 1),
+        "context": round(context, 1),
+        "constraints": round(constraints, 1),
+        "examples": round(examples, 1),
+        "category": category,
+        "improved_prompt": _build_improved(prompt_text, {"category": category}),
         "coaching_tip": (
-            "Add more context about your goal, specify the exact output format you want, "
-            "and include any constraints or requirements. The more specific you are, the better the AI response."
+            "Anchor your prompt with explicit output constraints (e.g. Markdown schema, length limits) "
+            "and specify a domain role to increase reasoning fidelity."
         ),
-        "success_probability": 25,
-        "success_reason": "Prompt lacks specificity and context needed for a great AI response."
+        "success_probability": success_prob,
+        "success_reason": f"Prompt has {category} task definition with baseline clarity and estimated success probability of {success_prob}%."
     }

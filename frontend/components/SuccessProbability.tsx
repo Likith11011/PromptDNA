@@ -1,36 +1,92 @@
-function getStyle(p: number) {
-  if (p >= 75) return { stroke: "#22c55e", text: "text-emerald-600", bg: "bg-emerald-50", label: "High chance of great response" }
-  if (p >= 50) return { stroke: "#f59e0b", text: "text-amber-600", bg: "bg-amber-50", label: "Moderate chance" }
-  return { stroke: "#ef4444", text: "text-red-500", bg: "bg-red-50", label: "Low chance — use improved version" }
+import React from "react"
+
+interface Props {
+  probability: number
+  reason: string | null
 }
 
-export default function SuccessProbability({ probability, reason }: { probability: number; reason: string | null }) {
-  const { stroke, text, bg, label } = getStyle(probability)
-  const circumference = 2 * Math.PI * 34
-  const dash = (probability / 100) * circumference
+function getStyle(p: number) {
+  if (p >= 75) {
+    return {
+      stroke: "#10b981",
+      textColor: "text-emerald-400",
+      badge: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
+      label: "High Success Rate",
+      desc: "Model has sufficient guidance to generate a high-accuracy, comprehensive answer.",
+    }
+  }
+  if (p >= 50) {
+    return {
+      stroke: "#f59e0b",
+      textColor: "text-amber-400",
+      badge: "bg-amber-500/10 border-amber-500/30 text-amber-300",
+      label: "Moderate Success Rate",
+      desc: "May require iterative follow-ups due to underspecified constraints or broad scope.",
+    }
+  }
+  return {
+    stroke: "#f43f5e",
+    textColor: "text-rose-400",
+    badge: "bg-rose-500/10 border-rose-500/30 text-rose-300",
+    label: "Low Success Rate",
+    desc: "High likelihood of shallow responses or hallucination. We strongly recommend using the improved prompt.",
+  }
+}
+
+export default function SuccessProbability({ probability, reason }: Props) {
+  const rounded = Math.round(probability)
+  const style = getStyle(rounded)
+  const radius = 32
+  const circumference = 2 * Math.PI * radius
+  const dashOffset = circumference - (rounded / 100) * circumference
 
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex items-center gap-5">
-      <div className="relative w-18 h-18 flex-shrink-0 flex items-center justify-center">
-        <svg className="w-18 h-18 -rotate-90" viewBox="0 0 80 80" width="72" height="72">
-          <circle cx="40" cy="40" r="34" fill="none" stroke="#f1f5f9" strokeWidth="7" />
-          <circle
-            cx="40" cy="40" r="34"
-            fill="none"
-            stroke={stroke}
-            strokeWidth="7"
-            strokeLinecap="round"
-            strokeDasharray={`${dash} ${circumference}`}
-          />
-        </svg>
-        <span className={`absolute text-base font-bold ${text}`}>{probability}%</span>
-      </div>
-      <div>
-        <p className="text-slate-700 font-semibold text-sm">Success Probability</p>
-        <span className={`inline-block mt-1 px-2.5 py-1 rounded-full text-xs font-medium ${bg} ${text}`}>
-          {label}
-        </span>
-        {reason && <p className="text-slate-400 text-xs mt-1.5 leading-relaxed max-w-sm">{reason}</p>}
+    <div className="glass-panel rounded-2xl p-5 border border-white/[0.08] shadow-xl relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-center gap-5">
+        
+        {/* Probability Radial Indicator */}
+        <div className="relative w-20 h-20 flex-shrink-0 flex items-center justify-center">
+          <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+            <circle
+              cx="40"
+              cy="40"
+              r={radius}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.05)"
+              strokeWidth="6"
+            />
+            <circle
+              cx="40"
+              cy="40"
+              r={radius}
+              fill="none"
+              stroke={style.stroke}
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              style={{ transition: "stroke-dashoffset 1s ease" }}
+            />
+          </svg>
+          <div className="absolute flex flex-col items-center">
+            <span className={`text-base font-extrabold font-mono ${style.textColor}`}>
+              {rounded}%
+            </span>
+          </div>
+        </div>
+
+        {/* Diagnostic description */}
+        <div className="text-center sm:text-left flex-1">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
+            <h4 className="text-white font-bold text-sm">Predicted AI Response Success</h4>
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${style.badge}`}>
+              {style.label}
+            </span>
+          </div>
+          <p className="text-slate-400 text-xs leading-relaxed">
+            {reason || style.desc}
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import {
   LineChart,
   Line,
@@ -16,14 +17,23 @@ interface Props {
   data: ScoreTrendPoint[]
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: Array<{
+    value?: number
+    payload?: ScoreTrendPoint
+  }>
+  label?: string | number
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
-    const score = payload[0].value
-    const color = score >= 75 ? "#22c55e" : score >= 50 ? "#f59e0b" : "#ef4444"
+    const score = payload[0].value ?? 0
+    const color = score >= 75 ? "#10b981" : score >= 50 ? "#f59e0b" : "#f43f5e"
     return (
-      <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-lg">
-        <p className="text-gray-500 text-xs mb-1">Prompt #{label}</p>
-        <p className="font-bold text-sm" style={{ color }}>
+      <div className="bg-[#0b0f19] border border-white/[0.12] rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl">
+        <p className="text-slate-400 font-mono text-xs mb-1">Prompt #{label}</p>
+        <p className="font-extrabold font-mono text-sm" style={{ color }}>
           Score: {score}/100
         </p>
       </div>
@@ -35,9 +45,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function ScoreTrendChart({ data }: Props) {
   if (data.length < 2) {
     return (
-      <div className="bg-white border border-gray-100 rounded-2xl p-6 text-center shadow-sm">
-        <p className="text-gray-400 text-sm">
-          Analyze at least 2 prompts to see your score trend.
+      <div className="glass-panel rounded-2xl p-6 text-center border border-white/[0.06]">
+        <p className="text-slate-400 text-xs font-mono">
+          Analyze at least 2 prompts to unlock real-time score trajectory tracking.
         </p>
       </div>
     )
@@ -46,75 +56,66 @@ export default function ScoreTrendChart({ data }: Props) {
   const avg = Math.round(data.reduce((s, d) => s + d.score, 0) / data.length)
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+    <div className="glass-panel rounded-2xl p-6 border border-white/[0.08] shadow-2xl relative overflow-hidden">
+      
+      {/* Chart Header */}
+      <div className="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.04]">
         <div>
-          <h3 className="text-gray-900 font-semibold text-sm">Score Trend</h3>
-          <p className="text-gray-400 text-xs mt-0.5">Your prompt quality over time</p>
+          <h4 className="text-white font-bold text-sm tracking-wide flex items-center gap-2">
+            <span>📈</span> Prompt Score Trajectory
+          </h4>
+          <p className="text-slate-400 text-xs mt-0.5">Historical quality evolution over time</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-gray-400">Average</p>
-          <p className="text-lg font-bold text-indigo-600">{avg}/100</p>
+          <p className="text-[10px] uppercase font-mono tracking-wider text-slate-400">Mean Score</p>
+          <p className="text-base font-extrabold font-mono text-cyan-400">{avg}/100</p>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-          <XAxis
-            dataKey="index"
-            tick={{ fill: "#94a3b8", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-            label={{
-              value: "Prompt #",
-              position: "insideBottomRight",
-              offset: -5,
-              fill: "#94a3b8",
-              fontSize: 10,
-            }}
-          />
-          <YAxis
-            domain={[0, 100]}
-            tick={{ fill: "#94a3b8", fontSize: 11 }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <ReferenceLine
-            y={avg}
-            stroke="#818cf8"
-            strokeDasharray="4 4"
-            strokeWidth={1}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Line
-            type="monotone"
-            dataKey="score"
-            stroke="#6366f1"
-            strokeWidth={2.5}
-            dot={(props) => {
-              const { cx, cy, payload } = props
-              const color =
-                payload.score >= 75
-                  ? "#22c55e"
-                  : payload.score >= 50
-                  ? "#f59e0b"
-                  : "#ef4444"
-              return (
-                <circle
-                  key={payload.index}
-                  cx={cx}
-                  cy={cy}
-                  r={4}
-                  fill={color}
-                  stroke="white"
-                  strokeWidth={2}
-                />
-              )
-            }}
-            activeDot={{ r: 6, fill: "#6366f1", stroke: "white", strokeWidth: 2 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+
+      <div className="h-56 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 10, right: 15, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.04)" />
+            <XAxis
+              dataKey="index"
+              tick={{ fill: "#64748b", fontSize: 11, fontFamily: "monospace" }}
+              axisLine={{ stroke: "rgba(255, 255, 255, 0.08)" }}
+              tickLine={false}
+            />
+            <YAxis
+              domain={[0, 100]}
+              tick={{ fill: "#64748b", fontSize: 11, fontFamily: "monospace" }}
+              axisLine={{ stroke: "rgba(255, 255, 255, 0.08)" }}
+              tickLine={false}
+            />
+            <ReferenceLine
+              y={avg}
+              stroke="#6366f1"
+              strokeDasharray="4 4"
+              strokeWidth={1.5}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Line
+              type="monotone"
+              dataKey="score"
+              stroke="#06b6d4"
+              strokeWidth={3}
+              dot={{ r: 4, fill: "#6366f1", stroke: "#0b0f19", strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: "#06b6d4", stroke: "#fff", strokeWidth: 2 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 mt-3 pt-2 border-t border-white/[0.03]">
+        <span>First prompt ({data[0]?.score || 0} pts)</span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-2 h-0.5 bg-indigo-500" />
+          <span>Average line ({avg} pts)</span>
+        </span>
+        <span>Latest prompt ({data[data.length - 1]?.score || 0} pts)</span>
+      </div>
+
     </div>
   )
 }

@@ -1,6 +1,6 @@
 # 🧬 PromptDNA — AI Prompt Intelligence Coach
 
-> Turn your prompts into precision. Analyze, score, and improve how you communicate with AI using intelligent feedback powered by LLaMA 3.
+> Turn your prompts into precision. Analyze, score, and improve how you communicate with AI using intelligent feedback powered by openai/gpt-oss-120b.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-indigo?style=for-the-badge)](https://prompt-dna-pi.vercel.app)
 [![Backend](https://img.shields.io/badge/API%20Docs-Render-green?style=for-the-badge)](https://promptdna.onrender.com/docs)
@@ -92,9 +92,11 @@ Feature Extraction (NLP + Rules)
  ↓
 Scoring Engine (Hybrid Logic)
  ↓
-LLM (LLaMA 3 / Groq API)
+LLM (openai/gpt-oss-120b / openai/gpt-oss-20b / Groq API)
  ↓
 PostgreSQL (User + Analytics Data)
+```
+
 🧩 Architecture Highlights
 Hybrid AI system (Rules + LLM)
 
@@ -108,7 +110,7 @@ Modular AI service architecture
 Layer	Technology
 Frontend	Next.js 14, TypeScript, Tailwind CSS, Recharts
 Backend	FastAPI, SQLAlchemy, Pydantic, Alembic
-AI Engine	Groq API (LLaMA 3.3 70B Versatile)
+AI Engine	Groq API (openai/gpt-oss-120b & openai/gpt-oss-20b)
 Database	PostgreSQL (Neon)
 Auth	JWT (python-jose, bcrypt)
 Deployment	Vercel (Frontend), Render (Backend)

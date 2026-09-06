@@ -1,49 +1,123 @@
+import React from "react"
 import { Personality } from "@/types"
 
-const typeColors: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+const TYPE_CONFIG: Record<
+  string,
+  {
+    bg: string
+    border: string
+    glow: string
+    text: string
+    badgeBg: string
+    badgeText: string
+    tagline: string
+  }
+> = {
   Architect: {
-    bg: "bg-blue-50", border: "border-blue-100",
-    text: "text-blue-700", badge: "bg-blue-100 text-blue-600"
+    bg: "from-blue-600/15 via-indigo-600/10 to-cyan-500/10",
+    border: "border-blue-500/30",
+    glow: "shadow-blue-500/20",
+    text: "text-blue-400",
+    badgeBg: "bg-blue-500/15 border-blue-500/30",
+    badgeText: "text-blue-300",
+    tagline: "Systematic, highly structured, precision constraint engineering",
   },
   Researcher: {
-    bg: "bg-violet-50", border: "border-violet-100",
-    text: "text-violet-700", badge: "bg-violet-100 text-violet-600"
+    bg: "from-purple-600/15 via-violet-600/10 to-pink-500/10",
+    border: "border-purple-500/30",
+    glow: "shadow-purple-500/20",
+    text: "text-purple-400",
+    badgeBg: "bg-purple-500/15 border-purple-500/30",
+    badgeText: "text-purple-300",
+    tagline: "Context-rich, deep domain investigation, hypothesis driven",
   },
   Builder: {
-    bg: "bg-emerald-50", border: "border-emerald-100",
-    text: "text-emerald-700", badge: "bg-emerald-100 text-emerald-600"
+    bg: "from-emerald-600/15 via-teal-600/10 to-cyan-500/10",
+    border: "border-emerald-500/30",
+    glow: "shadow-emerald-500/20",
+    text: "text-emerald-400",
+    badgeBg: "bg-emerald-500/15 border-emerald-500/30",
+    badgeText: "text-emerald-300",
+    tagline: "Code-centric, functional execution, pragmatically grounded",
   },
   Creator: {
-    bg: "bg-pink-50", border: "border-pink-100",
-    text: "text-pink-700", badge: "bg-pink-100 text-pink-600"
+    bg: "from-pink-600/15 via-rose-600/10 to-amber-500/10",
+    border: "border-pink-500/30",
+    glow: "shadow-pink-500/20",
+    text: "text-pink-400",
+    badgeBg: "bg-pink-500/15 border-pink-500/30",
+    badgeText: "text-pink-300",
+    tagline: "Expressive, narrative-driven, expansive ideation specialist",
   },
   Explorer: {
-    bg: "bg-amber-50", border: "border-amber-100",
-    text: "text-amber-700", badge: "bg-amber-100 text-amber-600"
+    bg: "from-amber-600/15 via-orange-600/10 to-yellow-500/10",
+    border: "border-amber-500/30",
+    glow: "shadow-amber-500/20",
+    text: "text-amber-400",
+    badgeBg: "bg-amber-500/15 border-amber-500/30",
+    badgeText: "text-amber-300",
+    tagline: "Iterative probing, open-ended experimentation, dynamic discovery",
   },
 }
 
 export default function PersonalityCard({ personality }: { personality: Personality }) {
-  const colors = typeColors[personality.type] || typeColors.Explorer
+  const config = TYPE_CONFIG[personality.type] || TYPE_CONFIG.Explorer
 
   return (
-    <div className={`${colors.bg} border ${colors.border} rounded-2xl p-6`}>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm text-3xl">
+    <div
+      className={`
+        glass-panel rounded-2xl p-6 sm:p-7 border ${config.border} shadow-2xl relative overflow-hidden bg-gradient-to-br ${config.bg}
+      `}
+    >
+      {/* Decorative ambient hologram badge */}
+      <div className="absolute top-4 right-4 text-xs font-mono px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] text-slate-400">
+        AI DNA ARCHE-TYPE
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-5">
+        {/* Archetype Icon Avatar */}
+        <div className="w-16 h-16 rounded-2xl bg-slate-900/90 border border-white/[0.15] flex items-center justify-center text-3xl shadow-xl shadow-black/40 flex-shrink-0">
           {personality.icon}
         </div>
+
         <div>
-          <p className="text-slate-400 text-xs font-medium uppercase tracking-wide">Prompt Personality</p>
-          <p className={`text-xl font-bold ${colors.text}`}>{personality.type}</p>
+          <div className="flex items-center gap-2">
+            <h3 className="text-2xl font-extrabold text-white tracking-tight">
+              The {personality.type}
+            </h3>
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-bold border ${config.badgeBg} ${config.badgeText}`}>
+              DOMINANT PATTERN
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            {config.tagline}
+          </p>
         </div>
       </div>
-      <p className="text-slate-600 text-sm leading-relaxed mb-4">{personality.description}</p>
-      <div className="flex flex-wrap gap-2">
-        {personality.traits.map((trait) => (
-          <span key={trait} className={`px-2.5 py-1 rounded-full text-xs font-medium ${colors.badge}`}>
-            {trait}
-          </span>
-        ))}
+
+      {/* Archetype Behavioral Summary */}
+      <p className="text-slate-300 text-sm leading-relaxed mb-5 bg-black/25 rounded-xl p-4 border border-white/[0.04]">
+        {personality.description}
+      </p>
+
+      {/* Trait Chips */}
+      <div>
+        <h4 className="text-[11px] font-mono uppercase tracking-wider text-slate-400 mb-2.5">
+          Signature Prompting Traits
+        </h4>
+        <div className="flex flex-wrap gap-2">
+          {personality.traits.map((trait) => (
+            <span
+              key={trait}
+              className={`
+                px-3 py-1 rounded-xl text-xs font-medium border shadow-xs transition-all hover:scale-105
+                ${config.badgeBg} ${config.badgeText}
+              `}
+            >
+              ✦ {trait}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   )

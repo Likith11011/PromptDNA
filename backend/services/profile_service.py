@@ -171,10 +171,10 @@ def _compute_weekly_trend(db: Session, user_id: str) -> list[dict]:
             round(sum(l.total_score for l in logs) / len(logs), 1)
             if logs else 0
         )
-        week_number = 4 - week_offset  # 3→1, 2→2, 1→3, 0→4
+        week_number = 4 - week_offset  # 3->1, 2->2, 1->3, 0->4
 
         # Date range label for tooltip
-        date_label = f"{w_start_ist.strftime('%b %d')} – {(w_end_ist - timedelta(days=1)).strftime('%b %d')}"
+        date_label = f"{w_start_ist.strftime('%b %d')} - {(w_end_ist - timedelta(days=1)).strftime('%b %d')}"
 
         weeks.append({
             "week": f"Week {week_number}",
@@ -184,7 +184,7 @@ def _compute_weekly_trend(db: Session, user_id: str) -> list[dict]:
             "has_data": len(logs) > 0,
         })
 
-        print(f"  → {len(logs)} prompts, avg={avg}")
+        print(f"  -> {len(logs)} prompts, avg={avg}")
 
     return weeks
 

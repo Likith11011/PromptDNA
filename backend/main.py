@@ -23,16 +23,26 @@ app = FastAPI(
 
 raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
 if raw_origins == "*":
-    allowed_origins = ["*"]
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "https://prompt-dna-pi.vercel.app",
+    ]
 else:
-    allowed_origins = [o.strip() for o in raw_origins.split(",")]
+    allowed_origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
+    for default_origin in ["http://localhost:3000", "http://127.0.0.1:3000"]:
+        if default_origin not in allowed_origins:
+            allowed_origins.append(default_origin)
 
 logger.info(f"CORS origins: {allowed_origins}")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=False if "*" in allowed_origins else True,
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
