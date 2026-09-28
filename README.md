@@ -225,7 +225,3 @@ Kushitha B
 B.Tech Artificial Intelligence & Machine Learning
 Alliance University, Bengaluru
 GitHub: KushithaBhaskar
-
-
-📄 License
-MIT License
