@@ -220,9 +220,12 @@ Likith B
 B.Tech Artificial Intelligence & Machine Learning
 Alliance University, Bengaluru
 
-GitHub: @Likith11011
+view by
+Kushitha B
+B.Tech Artificial Intelligence & Machine Learning
+Alliance University, Bengaluru
+GitHub: KushithaBhaskar
 
-LinkedIn: (add your link here)
 
 📄 License
 MIT License
