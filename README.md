@@ -1,13 +1,3 @@
-# 🧬 PromptDNA — AI Prompt Intelligence Coach
-
-> Turn your prompts into precision. Analyze, score, and improve how you communicate with AI using intelligent feedback powered by openai/gpt-oss-120b.
-
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-indigo?style=for-the-badge)](https://prompt-dna-pi.vercel.app)
-[![Backend](https://img.shields.io/badge/API%20Docs-Render-green?style=for-the-badge)](https://promptdna.onrender.com/docs)
-[![GitHub](https://img.shields.io/badge/GitHub-PromptDNA-black?style=for-the-badge&logo=github)](https://github.com/Likith11011/PromptDNA)
-
----
-
 🧬 PromptDNA — AI Prompt Intelligence Coach
 
 Turn your prompts into precision. Analyze, score, and improve how you communicate with AI using intelligent feedback powered by LLaMA 3.3 70B.
