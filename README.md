@@ -220,7 +220,7 @@ Likith B
 B.Tech Artificial Intelligence & Machine Learning
 Alliance University, Bengaluru
 
-view by
+
 Kushitha B
 B.Tech Artificial Intelligence & Machine Learning
 Alliance University, Bengaluru
